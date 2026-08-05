@@ -6,10 +6,18 @@
     <title>Power AI</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #000000; color: #ffffff; display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Styles */
+        /* Auth Screen */
+        #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .auth-card { width: 100%; max-width: 320px; text-align: center; }
+        .auth-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 25px; }
+        .auth-input { width: 100%; padding: 12px 16px; background: #1c1c1e; border: 1px solid #333; border-radius: 12px; color: #fff; margin-bottom: 12px; font-size: 0.95rem; outline: none; }
+        .auth-btn { width: 100%; padding: 12px; background: #1a73e8; color: #fff; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        .toggle-auth { margin-top: 15px; color: #8e8e93; font-size: 0.85rem; cursor: pointer; }
+
+        /* Sidebar & App */
         #sidebar { width: 280px; background-color: #0d0d0d; height: 100%; display: flex; flex-direction: column; position: fixed; left: -280px; top: 0; transition: left 0.3s ease; z-index: 100; border-right: 1px solid #1a1a1a; padding: 15px; }
         #sidebar.open { left: 0; }
         .sidebar-header { font-size: 1.3rem; font-weight: bold; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -18,69 +26,64 @@
         .recents-title { color: #8e8e93; font-size: 0.8rem; margin: 20px 0 10px 10px; font-weight: 600; }
         .chat-history { flex: 1; overflow-y: auto; }
         .history-item { padding: 10px 12px; border-radius: 8px; color: #d1d1d6; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-        .history-item:hover { background-color: #1a1a1a; }
         .user-profile { display: flex; align-items: center; gap: 10px; padding: 12px; border-top: 1px solid #1a1a1a; margin-top: auto; }
         .avatar { width: 32px; height: 32px; background: #3a3a3c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; }
 
-        /* Main Overlay */
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 90; }
-
-        /* Main Content */
         #main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; width: 100%; }
 
-        /* Top Bar */
         header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #000000; }
         .header-left { display: flex; align-items: center; gap: 12px; }
         .icon-btn { background: none; border: none; color: #ffffff; font-size: 1.2rem; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .icon-btn:hover { background: #1c1c1e; }
-        .get-plus-btn { background: #1c1c1e; color: #d4bbff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .get-plus-btn { background: #1c1c1e; color: #d4bbff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
 
-        /* Chat Area */
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .welcome-screen { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; gap: 12px; padding-bottom: 20px; }
-        .quick-btn { display: flex; align-items: center; gap: 12px; color: #ececec; font-size: 0.95rem; padding: 8px 0; cursor: pointer; }
-        .quick-btn i { font-size: 1.1rem; color: #8e8e93; width: 24px; }
+        .quick-btn { display: flex; align-items: center; gap: 12px; color: #ececec; font-size: 0.95rem; padding: 10px; background: #1c1c1e; border-radius: 12px; cursor: pointer; }
 
         .message { display: flex; flex-direction: column; max-width: 88%; padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; }
-        .user-msg { background: #2c2c2e; align-self: flex-end; color: #ffffff; border-bottom-right-radius: 4px; }
-        .ai-msg { background: transparent; align-self: flex-start; color: #ececec; padding-left: 0; }
+        .user-msg { background: #2c2c2e; align-self: flex-end; color: #ffffff; }
+        .ai-msg { background: #121212; align-self: flex-start; color: #ececec; border: 1px solid #222; }
+        .ai-msg img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
 
-        /* Bottom Input Bar */
         #input-area { padding: 12px 16px 20px 16px; background: #000000; }
         .input-box { background: #1c1c1e; border-radius: 28px; display: flex; align-items: center; padding: 6px 12px 6px 16px; gap: 10px; }
-        .plus-btn { background: none; border: none; color: #ffffff; font-size: 1.3rem; cursor: pointer; }
-        textarea { flex: 1; background: transparent; border: none; outline: none; color: #ffffff; font-size: 0.95rem; resize: none; height: 24px; max-height: 100px; line-height: 24px; }
-        .action-btns { display: flex; align-items: center; gap: 8px; }
-        .voice-wave-btn { background: #1a73e8; color: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; }
+        textarea { flex: 1; background: transparent; border: none; outline: none; color: #ffffff; font-size: 0.95rem; resize: none; height: 24px; max-height: 100px; }
+        .voice-wave-btn { background: #1a73e8; color: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div class="auth-title" id="auth-title">Welcome to Power AI</div>
+            <input type="email" id="auth-email" class="auth-input" placeholder="Email address">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Password">
+            <button class="auth-btn" onclick="handleAuth()">Continue</button>
+            <div class="toggle-auth" onclick="toggleAuthMode()" id="toggle-text">Don't have an account? Sign up</div>
+        </div>
+    </div>
+
     <!-- Sidebar Overlay -->
     <div id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar Menu -->
+    <!-- Sidebar -->
     <div id="sidebar">
         <div class="sidebar-header">
             <span>Power AI</span>
             <button class="icon-btn" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="menu-item"><i class="fa-regular fa-image"></i> Images</div>
+        <div class="menu-item" onclick="quickSend('Create an image of a futuristic city')"><i class="fa-regular fa-image"></i> Images</div>
         <div class="menu-item"><i class="fa-solid fa-layer-group"></i> Library</div>
         <div class="menu-item"><i class="fa-regular fa-folder"></i> Projects</div>
-        <div class="menu-item"><i class="fa-solid fa-puzzle-piece"></i> Plugins</div>
 
         <div class="recents-title">Recents</div>
-        <div class="chat-history">
-            <div class="history-item">Logo design description</div>
-            <div class="history-item">Police vs BSc Nursing</div>
-            <div class="history-item">व्हिडिओ स्क्रिप्ट आयडिया</div>
-            <div class="history-item">मेरा प्रिय मित्र निबंध</div>
-        </div>
+        <div class="chat-history" id="chat-history"></div>
 
         <div class="user-profile">
-            <div class="avatar">RK</div>
-            <span style="font-size: 0.9rem; font-weight: 500;">Rameshwar Kharade</span>
+            <div class="avatar" id="user-avatar">U</div>
+            <span style="font-size: 0.9rem;" id="user-name-display">User</span>
         </div>
     </div>
 
@@ -96,24 +99,40 @@
 
         <div id="chat-container">
             <div class="welcome-screen" id="welcome-screen">
-                <div class="quick-btn" onclick="quickSend('Create an image')"><i class="fa-regular fa-image"></i> Create an image</div>
-                <div class="quick-btn" onclick="quickSend('Write or edit text')"><i class="fa-regular fa-pen-to-square"></i> Write or edit</div>
-                <div class="quick-btn" onclick="quickSend('Search the web for')"><i class="fa-solid fa-globe"></i> Search the web</div>
+                <div class="quick-btn" onclick="quickSend('Create an image of a flying car')"><i class="fa-regular fa-image"></i> Create an image</div>
+                <div class="quick-btn" onclick="quickSend('Write a video script idea')"><i class="fa-regular fa-pen-to-square"></i> Write or edit</div>
+                <div class="quick-btn" onclick="quickSend('Search the web for latest AI news')"><i class="fa-solid fa-globe"></i> Search the web</div>
             </div>
         </div>
 
         <div id="input-area">
             <div class="input-box">
-                <button class="plus-btn"><i class="fa-solid fa-plus"></i></button>
                 <textarea id="user-input" placeholder="Ask Power AI" rows="1"></textarea>
-                <div class="action-btns">
-                    <button class="voice-wave-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
-                </div>
+                <button class="voice-wave-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
             </div>
         </div>
     </div>
 
     <script>
+        let isSignUp = false;
+
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            document.getElementById('auth-title').innerText = isSignUp ? "Create Account" : "Welcome to Power AI";
+            document.getElementById('toggle-text').innerText = isSignUp ? "Already have an account? Log in" : "Don't have an account? Sign up";
+        }
+
+        function handleAuth() {
+            const email = document.getElementById('auth-email').value;
+            if (!email) return alert("Please enter email");
+            
+            const name = email.split('@')[0];
+            document.getElementById('user-name-display').innerText = name;
+            document.getElementById('user-avatar').innerText = name.charAt(0).toUpperCase();
+            
+            document.getElementById('auth-screen').style.display = 'none';
+        }
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
@@ -131,17 +150,21 @@
 
             const chatContainer = document.getElementById('chat-container');
 
-            // User Message
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-msg';
             userDiv.innerText = text;
             chatContainer.appendChild(userDiv);
             input.value = '';
 
-            // AI Response Placeholder
+            const history = document.getElementById('chat-history');
+            const hItem = document.createElement('div');
+            hItem.className = 'history-item';
+            hItem.innerText = text;
+            history.prepend(hItem);
+
             const aiDiv = document.createElement('div');
             aiDiv.className = 'message ai-msg';
-            aiDiv.innerText = 'Powering response...';
+            aiDiv.innerText = 'Power AI विचार करत आहे...';
             chatContainer.appendChild(aiDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
@@ -152,9 +175,15 @@
                     body: JSON.stringify({ message: text })
                 });
                 const data = await response.json();
-                aiDiv.innerText = data.reply || "काही अडचण आली.";
+                
+                if (data.reply.includes("![Generated Image]")) {
+                    const imgUrl = data.reply.match(/\((.*?)\)/)[1];
+                    aiDiv.innerHTML = `इमेज तयार झाली आहे:<br><img src="${imgUrl}" alt="Generated Image">`;
+                } else {
+                    aiDiv.innerText = data.reply;
+                }
             } catch (e) {
-                aiDiv.innerText = "सर्व्हर एरर.";
+                aiDiv.innerText = "सर्व्हरशी संपर्क होऊ शकला नाही.";
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
